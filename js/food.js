@@ -1,5 +1,5 @@
 //创建食物对象
-((function (window) {
+(function (window) {
     //创建一个数组存储食物
     var elements = [];
     //食物的构造函数
@@ -41,4 +41,4 @@
     };
 
     window.Food = Food;
-})(window));
+}(window));

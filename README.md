@@ -16,6 +16,7 @@
 * 地图
 * 蛇
 * 食物
+* 随机数对象
 ### js如何实现面向对象
 js是一门基于面向对象的语言，但不是面向对象的，也就是说可以使用一些方法可以模拟面向对象，我们都知道面向对象具有以下特性：
 * 封装
@@ -28,8 +29,289 @@ js没有类的概念，但是可以通过构造函数来模拟，添加属性和
 
 有了这些概念，可以来实现了，其实我一开始是毫无头绪的，不从下手，但是一点点的分析慢慢就知道如何实现了。
 ## 实现
+### 地图的显示
+设置一个div创建地图，设置样式
+```html
+<div class="map"></div>
+```
 
+```css
+.map {
+            width: 800px;
+            height: 600px;
+            background-color: #ccc;
+            position: relative;
+            margin: 50px auto;
+        }
+```
+### 随机数对象random
+> 这里把random对象暴露在window中，设置为全局对象，方便在其他对象中使用，后面的是一样的
+```javascript
+//随机数自调用函数
+((function (window) {
+    //随机数对象的构造函数
+    function Random() {
 
+    }
+    //添加方法
+    Random.prototype.getRandom = function (min, max) {
+        return Math.floor(Math.random() * (max - min) + min);
+    };
+    //将该对象设置为全局对象
+    window.Random = new Random();
+
+})(window));
+
+```
+### 食物对象food
+> 食物首先初始化随机生成在地图上，等待蛇过来吃它。蛇吃完后马上就要再产生新的食物，但是先要把之前的食物清除，我把食物存储在一个elements数组中，方便清除。食物的坐标是食物的宽度与地图的宽度的比值， 
+
+分析食物的属性有：
+* 宽（默认20px）
+* 高（默认20px）
+* 颜色（默认为绿色）
+***
+方法：
+* 初始化食物，随机在地图上生成
+* 清空食物，生成之前先把之前存在的食物先清除掉（防止一个地图全是食物，毕竟食物一次只能随机产生一次）
+```javascript
+//创建食物对象
+((function (window) {
+    //创建一个数组存储食物
+    var elements = [];
+    //食物的构造函数
+    function Food(width, height, color) {
+        this.width = width || 20;
+        this.height = height || 20;
+        this.color = color || "green";
+        this.element = document.createElement("div");
+    }
+
+    //初始食物的方法
+    Food.prototype.init = function (map) {
+        //初始化之前先删除地图中的元素
+        remove();
+        var div = this.element;
+        map.appendChild(div);
+        div.style.width = this.width + "px";
+        div.style.height = this.height + "px";
+        div.style.backgroundColor = this.color;
+        div.style.position = "absolute";
+        //初始化随机坐标
+        this.x = Random.getRandom(0, map.offsetWidth / this.width) * this.width;
+        this.y = Random.getRandom(0, map.offsetHeight / this.height) * this.height;
+        div.style.left = this.x + "px";
+        div.style.top = this.y + "px";
+        //将该食物放入数组
+        elements.push(div);
+        //定义私有函数
+        function remove() {
+            //从数组中找到该食物,然后找到该食物的父级元素,从父级元素删除该食物
+            for (var i = 0; i < elements.length; i++) {
+                var ele = elements[i];
+                ele.parentNode.removeChild(ele);
+                //将数组元素清空
+                elements.splice(i, 1);
+            }
+        }
+
+    };
+
+    window.Food = Food;
+})(window));
+```
+### 蛇对象snake
+```javascript (stype)
+//创建蛇对象
+((function (window) {
+    //创建一个数组存储蛇的每个部分
+    var elements = [];
+    //蛇的构造函数
+    function Snake(width, height, direction) {
+        this.width = width || 20;
+        this.height = height || 20;
+        this.body = [{
+                x: 3,
+                y: 2,
+                color: "red"
+            },
+            {
+                x: 2,
+                y: 2,
+                color: "orange"
+            },
+            {
+                x: 1,
+                y: 2,
+                color: "orange"
+            }
+        ];
+        this.direction = direction || "right";
+    }
+    //为蛇添加初始化方法
+    Snake.prototype.init = function (map) {
+        //初始化之前先删除蛇,让蛇移动
+        remove();
+        //创建蛇的每个部位,一个头,两个身体部分
+        for (var i = 0; i < this.body.length; i++) {
+            var div = document.createElement("div");
+            //蛇的每个对象
+            var obj = this.body[i];
+            map.appendChild(div);
+
+            div.style.position = "absolute";
+            div.style.width = this.width + "px";
+            div.style.height = this.height + "px";
+            div.style.left = obj.x * this.width + "px";
+            div.style.top = obj.y * this.height + "px";
+            div.style.backgroundColor = obj.color;
+            //放入数组
+            elements.push(div);
+        }
+    };
+    //蛇移动的方法
+    Snake.prototype.move = function (map, food) {
+        //将蛇的第三个部分放到第二个,第二个部分放到第一个
+        var i = this.body.length - 1;
+        for (; i > 0; i--) {
+            this.body[i].x = this.body[i - 1].x;
+            this.body[i].y = this.body[i - 1].y;
+        }
+        //判断方向,使头部移动
+        switch (this.direction) {
+            case "right":
+                this.body[0].x += 1;
+                break;
+            case "left":
+                this.body[0].x -= 1;
+                break;
+            case "top":
+                this.body[0].y -= 1;
+                break;
+            case "bottom":
+                this.body[0].y += 1;
+                break;
+        }
+        //判断蛇吃到食物没有
+        //获取蛇头部坐标与食物坐标比较
+        var headX = this.body[0].x * this.width;
+        var headY = this.body[0].y * this.height;
+
+        if (headX == food.x && headY == food.y) {
+            //获取蛇的尾巴
+            var last = this.body[this.body.length - 1];
+            //复制该尾巴
+            this.body.push({
+                x: last.x,
+                y: last.y,
+                color: last.color
+            });
+            //删除食物并且初始化食物
+            food.init(map);
+        }
+    };
+    //删除蛇
+    function remove() {
+        //从尾部开始删除
+        var i = elements.length - 1;
+        for (; i >= 0; i--) {
+            var ele = elements[i];
+            ele.parentNode.removeChild(ele);
+            elements.splice(i, 1);
+        }
+    }
+    window.Snake = Snake;
+})(window));
+```
+### 游戏对象Game
+```javascript (type)
+//游戏启动
+((function (window) {
+    var that = null; //保存Game的实例对象
+    //创建游戏的构造函数
+    function Game(map) {
+        //食物对象
+        this.food = new Food();
+        //蛇对象
+        this.snake = new Snake();
+        //地图
+        this.map = map;
+        that = this;
+    }
+    //初始化让食物和蛇显示出来
+    Game.prototype.init = function () {
+        this.food.init(this.map);
+        this.snake.init(this.map);
+        //调用蛇自移动的方法
+        this.runSnake(this.map, this.food);
+        //调用按键的方法
+        this.bindKey();
+    };
+    //蛇自移动
+    Game.prototype.runSnake = function (map, food) {
+        var timeId = setInterval(function () {
+            //让蛇移动
+            this.snake.move(map, food);
+            this.snake.init(map);
+            //获取头部的坐标
+            var snakeX = this.snake.body[0].x;
+            var snakeY = this.snake.body[0].y;
+            //最大坐标
+            var maxX = map.offsetWidth / this.snake.width;
+            var maxY = map.offsetHeight / this.snake.height;
+            //如果蛇撞墙游戏结束
+            if (snakeX < 0 || snakeX >= maxX) {
+                clearInterval(timeId);
+                alert("游戏结束");
+            }
+            if (snakeY < 0 || snakeY >= maxY) {
+                clearInterval(timeId);
+                alert("游戏结束");
+            }
+        }.bind(that), 50);
+    };
+    //按键改变蛇的方向的方法
+    Game.prototype.bindKey = function () {
+        //获取用户按键,改变蛇的方向
+        document.addEventListener("keydown", function (e) {
+            switch (e.keyCode) {
+                case 37:
+                    this.snake.direction = "left";
+                    break;
+                case 38:
+                    this.snake.direction = "top";
+                    break;
+                case 39:
+                    this.snake.direction = "right";
+                    break;
+                case 40:
+                    this.snake.direction = "bottom";
+                    break;
+            }
+        }.bind(that), false);
+    };
+    window.Game = Game;
+})(window));
+```
+### 实例化游戏对象并初始化
+```html
+var game = new Game(document.querySelector(".map"));
+game.init();
+```
+## 游戏测试
+* 点击按钮启动游戏（后续优化）
+* 设置游戏难度（后续优化）
+> 在game对象里面的定时器设置，后续需要优化
+* 键盘方向键控制蛇的方向
+![](img/game.png)
+* 蛇碰到方块身体长度变长
+* 蛇碰到边界游戏结束或者蛇碰到自己的身体游戏结束（后续优化）
+![](img/gameover.png)
+ ## 后续优化
+ * 启动按钮
+ * 难度按钮
+ * 蛇的形状
+ * 蛇结束的条件
 
 
 

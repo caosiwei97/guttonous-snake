@@ -1,5 +1,5 @@
 //创建蛇对象
-((function (window) {
+(function (window) {
     //创建一个数组存储蛇的每个部分
     var elements = [];
     //蛇的构造函数
@@ -97,4 +97,4 @@
         }
     }
     window.Snake = Snake;
-})(window));
+}(window));

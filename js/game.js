@@ -1,5 +1,5 @@
 //游戏启动
-((function (window) {
+(function (window) {
     var that = null; //保存Game的实例对象
     //创建游戏的构造函数
     function Game(map) {
@@ -64,4 +64,4 @@
         }.bind(that), false);
     };
     window.Game = Game;
-})(window));
+}(window));

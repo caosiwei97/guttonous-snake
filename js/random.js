@@ -1,5 +1,5 @@
 //随机数自调用函数
-((function (window) {
+(function (window) {
     //随机数对象的构造函数
     function Random() {
 
@@ -11,4 +11,4 @@
     //将该对象设置为全局对象
     window.Random = new Random();
 
-})(window));
+}(window));
