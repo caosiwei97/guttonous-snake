@@ -1,7 +1,7 @@
-//´´½¨Éß¶ÔÏó
+//åˆ›å»ºè›‡å¯¹è±¡
 
 export class Snake {
-    //´´½¨ÊµÀı
+    //åˆ›å»ºå®ä¾‹
     static getInstance() {
         if (!Snake.instance) {
             Snake.instance = new Snake();
@@ -33,7 +33,7 @@ export class Snake {
         this.direction = direction || "right";
         this.elements = [];
         this.remove = () => {
-            //´ÓÎ²²¿¿ªÊ¼É¾³ı
+            //ä»å°¾éƒ¨å¼€å§‹åˆ é™¤
             let i = this.elements.length - 1;
             for (; i >= 0; i--) {
                 let ele = this.elements[i];
@@ -42,14 +42,14 @@ export class Snake {
             }
         };
     }
-    //ÎªÉßÌí¼Ó³õÊ¼»¯·½·¨
+    //ä¸ºè›‡æ·»åŠ åˆå§‹åŒ–æ–¹æ³•
     init(map) {
-        //³õÊ¼»¯Ö®Ç°ÏÈÉ¾³ıÉß,ÈÃÉßÒÆ¶¯
+        //åˆå§‹åŒ–ä¹‹å‰å…ˆåˆ é™¤è›‡,è®©è›‡ç§»åŠ¨
         this.remove();
-        //´´½¨ÉßµÄÃ¿¸ö²¿Î»,Ò»¸öÍ·,Á½¸öÉíÌå²¿·Ö
+        //åˆ›å»ºè›‡çš„æ¯ä¸ªéƒ¨ä½,ä¸€ä¸ªå¤´,ä¸¤ä¸ªèº«ä½“éƒ¨åˆ†
         for (let i = 0; i < this.body.length; i++) {
             let div = document.createElement("div");
-            //ÉßµÄÃ¿¸ö¶ÔÏó
+            //è›‡çš„æ¯ä¸ªå¯¹è±¡
             let obj = this.body[i];
             map.appendChild(div);
             div.style.position = "absolute";
@@ -58,20 +58,20 @@ export class Snake {
             div.style.left = obj.x * this.width + "px";
             div.style.top = obj.y * this.height + "px";
             div.style.backgroundColor = obj.color;
-            //·ÅÈëÊı×é
+            //æ”¾å…¥æ•°ç»„
             this.elements.push(div);
         }
     }
 
-    //ÉßÒÆ¶¯µÄ·½·¨
+    //è›‡ç§»åŠ¨çš„æ–¹æ³•
     move(map, food) {
-        //½«ÉßµÄµÚÈı¸ö²¿·Ö·Åµ½µÚ¶ş¸ö,µÚ¶ş¸ö²¿·Ö·Åµ½µÚÒ»¸ö
+        //å°†è›‡çš„ç¬¬ä¸‰ä¸ªéƒ¨åˆ†æ”¾åˆ°ç¬¬äºŒä¸ª,ç¬¬äºŒä¸ªéƒ¨åˆ†æ”¾åˆ°ç¬¬ä¸€ä¸ª
         let i = this.body.length - 1;
         for (; i > 0; i--) {
             this.body[i].x = this.body[i - 1].x;
             this.body[i].y = this.body[i - 1].y;
         }
-        //ÅĞ¶Ï·½Ïò,Ê¹Í·²¿ÒÆ¶¯
+        //åˆ¤æ–­æ–¹å‘,ä½¿å¤´éƒ¨ç§»åŠ¨
         switch (this.direction) {
             case "right":
                 this.body[0].x += 1;
@@ -86,23 +86,23 @@ export class Snake {
                 this.body[0].y += 1;
                 break;
         }
-        //ÅĞ¶ÏÉßÊÇ·ñ³Ôµ½Ê³Îï
-        //»ñÈ¡ÉßÍ·²¿×ø±êÓëÊ³Îï×ø±ê±È½Ï
+        //åˆ¤æ–­è›‡æ˜¯å¦åƒåˆ°é£Ÿç‰©
+        //è·å–è›‡å¤´éƒ¨åæ ‡ä¸é£Ÿç‰©åæ ‡æ¯”è¾ƒ
         let headX = this.body[0].x * this.width;
         let headY = this.body[0].y * this.height;
         let score = document.querySelector("#score");
         if (headX == food.x && headY == food.y) {
-            //»ñÈ¡ÉßµÄÎ²°Í
+            //è·å–è›‡çš„å°¾å·´
             let last = this.body[this.body.length - 1];
-            //¸´ÖÆ¸ÃÎ²°Í
+            //å¤åˆ¶è¯¥å°¾å·´
             this.body.push({
                 x: last.x,
                 y: last.y,
                 color: last.color
             });
             this.count++;
-            score.innerHTML = `µÃ·Ö: ${this.count}`;
-            //É¾³ıÊ³Îï²¢ÇÒ³õÊ¼»¯Ê³Îï
+            score.innerHTML = `å¾—åˆ†: ${this.count}`;
+            //åˆ é™¤é£Ÿç‰©å¹¶ä¸”åˆå§‹åŒ–é£Ÿç‰©
             food.init(map);
         }
     }
