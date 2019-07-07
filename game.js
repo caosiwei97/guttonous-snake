@@ -1,3 +1,3 @@
 import { Main } from "./Main.js";
 
-new Main();
+new Main(document.querySelector(".map")).init();
